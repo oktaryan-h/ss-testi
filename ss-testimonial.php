@@ -29,6 +29,9 @@ class SS_Testimonial {
 		return self::$instance;
 	}
 
+	/**
+	 * Install Plugin in the first time.
+	 */
 	public function install() {
 
 		global $wpdb;
@@ -44,8 +47,7 @@ class SS_Testimonial {
 		email tinytext NOT NULL,
 		phone_number tinytext NOT NULL,
 		testimonial text NOT NULL,
-		PRIMARY KEY  (id)
-		) $charset_collate;";
+		PRIMARY KEY  (id)) $charset_collate;";
 
 		require_once(ABSPATH.'wp-admin/includes/upgrade.php');
 		dbDelta($sql);
@@ -54,6 +56,9 @@ class SS_Testimonial {
 
 	}
 
+	/**
+	 * Saves the submitted testimonial form to database.
+	 */
 	public function save() {
 
 		if (isset($_POST['ts-submitted'])) {
@@ -79,6 +84,9 @@ class SS_Testimonial {
 		}
 	}
 
+	/**
+	 * The HTML form code to display in user form.
+	 */
 	public function html_form_code() {
 
 		echo '<form action="' . esc_url($_SERVER['REQUEST_URI']) . '" method="post">';
@@ -110,20 +118,27 @@ class SS_Testimonial {
 
 		return ob_get_clean();
 	}
-
 }
 
+/**
+ * Adds WP Testimonial Admin Page.
+ */
 class WP_Testimonial_Admin {
 
-		public function __construct() {
-		//add_shortcode('ss-testimonial', array($this, 'ts_shortcode'));
+	public function __construct() {
 	}
 
+	/**
+	 * Adds Admin Page Menu into the WP dashboard.
+	 */
 	function my_admin_menu() {
 
 		add_menu_page('SS Testimonial Admin Page', 'SS Testimonial', 'manage_options', 'ss-testimonial/ss-testimonial.php', 'ss_testimonial_admin_page', 'dashicons-tickets', 6 );
 	}
 
+	/**
+	 * Admin Page.
+	 */
 	function admin_page(){
 
 		global $wpdb;
@@ -147,14 +162,14 @@ class WP_Testimonial_Admin {
 
 				<?php foreach ($result as $a) { ?>
 
-					<tr>
-						<td><?php echo $a['id']; ?></td>
-						<td><?php echo $a['name']; ?></td>
-						<td><?php echo $a['email']; ?></td>
-						<td><?php echo $a['phone_number']; ?></td>
-						<td><?php echo $a['testimonial']; ?></td>
-						<td><button type="button">Delete</button></td>
-					</tr>
+				<tr>
+					<td><?php echo $a['id']; ?></td>
+					<td><?php echo $a['name']; ?></td>
+					<td><?php echo $a['email']; ?></td>
+					<td><?php echo $a['phone_number']; ?></td>
+					<td><?php echo $a['testimonial']; ?></td>
+					<td><button type="button">Delete</button></td>
+				</tr>
 
 				<?php } ?>
 			</table>
@@ -166,20 +181,20 @@ class WP_Testimonial_Admin {
 
 $testimonial = new SS_Testimonial;
 
+
+	/**
+	 * Calls to Install Plugin in the first time.
+	 */
 function testimonial_install() {
 	$testimonial = SS_Testimonial::get_instance();
 	$testimonial->install();
 }
 
-//$admin_menu = new WP_Testimonial_Admin;
-
-
 add_action('admin_menu', [new WP_Testimonial_Admin, 'my_admin_menu']);
 
-//add_shortcode('ss-testimonial', 'ts_shortcode');
-
-
-//WIDGET//
+/**
+WIDGET_SECTION
+*/
 
 /**
  * Adds Foo_Widget widget.
@@ -227,8 +242,8 @@ class testimonial_widget extends WP_Widget {
 		$title = ! empty( $instance['title'] ) ? $instance['title'] : esc_html__( 'New title', 'text_domain' );
 		?>
 		<p>
-		<label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php esc_attr_e( 'Title:', 'text_domain' ); ?></label> 
-		<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'title' ) ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>">
+			<label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php esc_attr_e( 'Title:', 'text_domain' ); ?></label> 
+			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'title' ) ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>">
 		</p>
 		<?php 
 	}
@@ -252,7 +267,10 @@ class testimonial_widget extends WP_Widget {
 
 } // class Foo_Widget
 
+	/**
+	 * Registers testimonial Widget
+	 */
 function register_testimonial_widget() {
-    register_widget( 'testimonial_widget' );
+	register_widget( 'testimonial_widget' );
 }
 add_action( 'widgets_init', 'register_testimonial_widget' );
