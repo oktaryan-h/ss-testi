@@ -181,7 +181,6 @@ class WP_Testimonial_Admin {
 
 $testimonial = new SS_Testimonial;
 
-
 	/**
 	 * Calls to Install Plugin in the first time.
 	 */
