@@ -18,6 +18,12 @@ class SS_Testimonial {
 
 	protected static $instance = null;
 
+	// private $errMsgs = array(
+	// 	'nameErr' => '',
+	// 	'emailErr' => '',
+	// 	'phoneErr' = '',
+	// 	'testimonialErr' => '');
+
 	private $nameErr = "";
 	private $emailErr = "";
 	private $phoneErr = "";
@@ -27,7 +33,7 @@ class SS_Testimonial {
 	private $email = "";
 	private $phone = "";
 	private $testimonial = "";
-	
+
 	private $sumErr = 0;
 
 	public function __construct() {
@@ -75,17 +81,19 @@ class SS_Testimonial {
 
 		if (isset($_POST['ts-submitted'])) {
 
-			$nameErr = $emailErr = $phoneErr = $testimonialErr = "";
-			$fname = $email = $phone = $testimonial = "";
+			//$nameErr = $emailErr = $phoneErr = $testimonialErr = "";
+			$fname = $email = $phone = $testimonial = array();
+
+
 			$sumErr = 0;
 
 			if (empty($_POST["ts-name"])) {
-				$nameErr = "Name is required";
+				$fname = "Name is required";
 				$sumErr = 1;
 			} else {
-				$fname = sanitize_text_field($_POST["ts-name"]);
-				if (!preg_match("/^[a-zA-Z ]*$/",$name)) {
-					$nameErr = "Only letters and white space allowed";
+				$fname['text'] = sanitize_text_field($_POST["ts-name"]);
+				if (!preg_match("/^[a-zA-Z ]*$/",$name['text'])) {
+					$fname = "Only letters and white space allowed";
 					$sumErr = 1;
 				}
 			}
@@ -228,17 +236,25 @@ class WP_Testimonial_Admin {
 	 */
 	function my_admin_menu() {
 
-		add_menu_page('SS Testimonial Admin Page', 'SS Testimonial', 'manage_options', 'ss-testimonial/ss-testimonial.php', 'ss_testimonial_admin_page', 'dashicons-tickets', 6 );
+		add_menu_page('SS Testimonial Admin Page', 'SS Testimonial', 'manage_options', 'ss-testimonial/ss-testimonial.php', array($this,'ss_testimonial_admin_page'), 'dashicons-tickets', 6 );
 	}
 
 	/**
 	 * Admin Page.
 	 */
-	function admin_page(){
+	function ss_testimonial_admin_page(){
 
 		global $wpdb;
+		$table_name = $wpdb->prefix.'testimonial';
 
-		$result = $wpdb->get_results('select * from wp_testimonial',ARRAY_A);
+		$delete_ts = $_GET['delete_ts'];
+
+		if (!empty($delete_ts)) {
+			$wpdb->delete($table_name, array('id' => $delete_ts));
+			//redirect();
+		}
+
+		$result = $wpdb->get_results("select * from $table_name",ARRAY_A);
 
 		?>
 		<div class="wrap">
@@ -263,7 +279,7 @@ class WP_Testimonial_Admin {
 					<td><?php echo $a['email']; ?></td>
 					<td><?php echo $a['phone_number']; ?></td>
 					<td><?php echo $a['testimonial']; ?></td>
-					<td><button type="button">Delete</button></td>
+					<td><a href="<?php echo add_query_arg('delete_ts',$a['id']) ?>" name="ts-delete">Delete</a></td>
 				</tr>
 
 				<?php } ?>
@@ -316,11 +332,12 @@ class testimonial_widget extends WP_Widget {
 	 */
 	public function widget( $args, $instance ) {
 		global $wpdb;
+		$table_name = $wpdb->prefix.'testimonial';
 		echo $args['before_widget'];
 		if ( ! empty( $instance['title'] ) ) {
 			echo $args['before_title'] . apply_filters( 'widget_title', $instance['title'] ) . $args['after_title'];
 		}
-		$result = $wpdb->get_row('select * from wp_testimonial order by rand() limit 1',ARRAY_A);
+		$result = $wpdb->get_row("select * from $table_name order by rand() limit 1",ARRAY_A);
 		echo $result['name'].'<br>'.$result['email'].'<br>'.substr($result['phone_number'],0,7).'***'.'<br>'.$result['testimonial'];
 		echo $args['after_widget'];
 	}
