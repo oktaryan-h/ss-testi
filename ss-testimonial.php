@@ -56,6 +56,8 @@ class SS_Testimonial {
 
 	}
 
+
+
 	/**
 	 * Saves the submitted testimonial form to database.
 	 */
@@ -63,10 +65,61 @@ class SS_Testimonial {
 
 		if (isset($_POST['ts-submitted'])) {
 
-			$name    = sanitize_text_field($_POST["ts-name"]);
-			$email   = sanitize_email($_POST["ts-email"]);
-			$phone_number = sanitize_text_field($_POST["ts-phone-number"]);
-			$testimonial = esc_textarea($_POST["ts-testimonial"]);
+			$nameErr = $emailErr = $phoneErr = $testimonialErr = "";
+			$name = $email = $phone = $testimonial = "";
+			$sumErr = 0;
+
+			if (empty($_POST["name"])) {
+				$nameErr = "Name is required";
+				$sumErr = 1;
+			} else {
+				$name = clean_input($_POST["ts-name"]);
+    // check if name only contains letters and whitespace
+				if (!preg_match("/^[a-zA-Z ]*$/",$name)) {
+					$nameErr = "Only letters and white space allowed";
+					$sumErr = 1;
+				}
+			}
+
+			if (empty($_POST["email"])) {
+				$emailErr = "Email is required";
+				$sumErr = 1;
+			} else {
+				$email = clean_input($_POST["ts-email"]);
+    // check if e-mail address is well-formed
+				if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+					$emailErr = "Invalid email format";
+					$sumErr = 1;
+				}
+			}
+
+			if (empty($_POST["phone"])) {
+				$phoneErr = "Phone is required";
+				$sumErr = 1;
+			} else {
+				$phone = clean_input($_POST["ts-phone"]);
+    // check if name only contains letters and whitespace
+				if (!preg_match("/^[0-9 ]*$/",$name)) {
+					$nameErr = "Only letters and white space allowed";
+					$sumErr = 1;
+				}
+			}
+
+			if (empty($_POST["testimonial"])) {
+				$testimonialErr = "Testimonial is required";
+				$sumErr = 1;
+			} else {
+				$testimonial = clean_input($_POST["ts-testimonial"]);
+			}
+
+		}
+
+/*		$name    = sanitize_text_field($_POST["ts-name"]);
+		$email   = sanitize_email($_POST["ts-email"]);
+		$phone_number = sanitize_text_field($_POST["ts-phone-number"]);
+		$testimonial = esc_textarea($_POST["ts-testimonial"]);*/
+
+		if ($sumErr == 0) {
 
 			global $wpdb;
 
@@ -81,6 +134,9 @@ class SS_Testimonial {
 					'testimonial' => $testimonial,
 				)
 			);
+
+			$name = $email = $phone = $testimonial = "";
+
 		}
 	}
 
@@ -92,19 +148,19 @@ class SS_Testimonial {
 		echo '<form action="' . esc_url($_SERVER['REQUEST_URI']) . '" method="post">';
 		echo '<p>';
 		echo 'Your Name (required) <br />';
-		echo '<input type="text" name="ts-name" pattern="[a-zA-Z0-9 ]+" value="' . (isset($_POST["ts-name"]) ? esc_attr($_POST["ts-name"]) : '') . '" size="40" />';
+		echo '<input type="text" name="ts-name" pattern="[a-zA-Z0-9 ]+" value="' . $name . '" size="40" /><span class="error"/>' . $nameErr . '</span>';
 		echo '</p>';
 		echo '<p>';
 		echo 'Your Email (required) <br />';
-		echo '<input type="email" name="ts-email" value="' . (isset($_POST["ts-email"]) ? esc_attr($_POST["ts-email"]) : '') . '" size="40" />';
+		echo '<input type="email" name="ts-email" value="' . $email . '" size="40" /><span class="error"/>' . $emailErr . '</span>';
 		echo '</p>';
 		echo '<p>';
 		echo 'Phone Number (required) <br />';
-		echo '<input type="tel" name="ts-phone-number" value="' . (isset($_POST["ts-phone-number"]) ? esc_attr($_POST["ts-phone-number"]) : '') . '" size="40" />';
+		echo '<input type="tel" name="ts-phone-number" value="' . $phone . '" size="40" /><span class="error"/>' . $phoneErr . '</span>';
 		echo '</p>';
 		echo '<p>';
 		echo 'Your Testimonial (required) <br />';
-		echo '<textarea rows="10" cols="35" name="ts-testimonial">' . (isset($_POST["ts-testimonial"]) ? esc_attr($_POST["ts-testimonial"]) : '') . '</textarea>';
+		echo '<textarea rows="10" cols="35" name="ts-testimonial">' . $testimonial . '</textarea><span class="error"/>' . $testimonial . '</span>';
 		echo '</p>';
 		echo '<p><input type="submit" name="ts-submitted" value="Send"/></p>';
 		echo '</form>';
@@ -118,6 +174,31 @@ class SS_Testimonial {
 
 		return ob_get_clean();
 	}
+
+/*	function validation($text,$type,$allow_empty = false) {
+		$err = '';
+		if (empty($text) && ($allow_empty == false) {
+			$err == $type.' is required';
+		}
+		else { 
+			if ($type == 'name') {
+				if (!preg_match("/^[a-zA-Z ]*$/",$text)) {
+					$err = "Only letters and white space allowed"; 
+				}
+			}
+			else if ($type == 'email') {
+				if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+					$err = "Invalid email format"; 
+				}
+			}
+			else if ($type == 'phone') {
+				if (!preg_match("/^[0-9 ]*$/",$text)) {
+					$err = "Only numbers allowed"; 
+				}
+			}
+		}
+		return array($text,$err);
+	}*/
 }
 
 /**
@@ -177,6 +258,13 @@ class WP_Testimonial_Admin {
 		<?php
 	}
 
+}
+
+function clean_input($data) {
+	$data = trim($data);
+	$data = stripslashes($data);
+	$data = htmlspecialchars($data);
+	return $data;
 }
 
 $testimonial = new SS_Testimonial;
