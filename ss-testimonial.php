@@ -66,14 +66,14 @@ class SS_Testimonial {
 		if (isset($_POST['ts-submitted'])) {
 
 			$nameErr = $emailErr = $phoneErr = $testimonialErr = "";
-			$name = $email = $phone = $testimonial = "";
+			$fname = $email = $phone = $testimonial = "";
 			$sumErr = 0;
 
-			if (empty($_POST["name"])) {
+			if (empty($_POST["ts-name"])) {
 				$nameErr = "Name is required";
 				$sumErr = 1;
 			} else {
-				$name = clean_input($_POST["ts-name"]);
+				$fname = sanitize_text_field($_POST["ts-name"]);
     // check if name only contains letters and whitespace
 				if (!preg_match("/^[a-zA-Z ]*$/",$name)) {
 					$nameErr = "Only letters and white space allowed";
@@ -81,11 +81,11 @@ class SS_Testimonial {
 				}
 			}
 
-			if (empty($_POST["email"])) {
+			if (empty($_POST["ts-email"])) {
 				$emailErr = "Email is required";
 				$sumErr = 1;
 			} else {
-				$email = clean_input($_POST["ts-email"]);
+				$email = sanitize_text_field($_POST["ts-email"]);
     // check if e-mail address is well-formed
 				if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 					$emailErr = "Invalid email format";
@@ -93,11 +93,11 @@ class SS_Testimonial {
 				}
 			}
 
-			if (empty($_POST["phone"])) {
+			if (empty($_POST["ts-phone"])) {
 				$phoneErr = "Phone is required";
 				$sumErr = 1;
 			} else {
-				$phone = clean_input($_POST["ts-phone"]);
+				$phone = sanitize_text_field($_POST["ts-phone"]);
     // check if name only contains letters and whitespace
 				if (!preg_match("/^[0-9 ]*$/",$name)) {
 					$nameErr = "Only letters and white space allowed";
@@ -105,11 +105,11 @@ class SS_Testimonial {
 				}
 			}
 
-			if (empty($_POST["testimonial"])) {
+			if (empty($_POST["ts-testimonial"])) {
 				$testimonialErr = "Testimonial is required";
 				$sumErr = 1;
 			} else {
-				$testimonial = clean_input($_POST["ts-testimonial"]);
+				$testimonial = sanitize_text_field($_POST["ts-testimonial"]);
 			}
 
 		}
@@ -128,14 +128,14 @@ class SS_Testimonial {
 			$wpdb->insert(
 				$table_name, 
 				array(
-					'name' => $name,
+					'name' => $fname,
 					'email' => $email,
-					'phone_number' => $phone_number,
+					'phone_number' => $phone,
 					'testimonial' => $testimonial,
 				)
 			);
 
-			$name = $email = $phone = $testimonial = "";
+			$fname = $email = $phone = $testimonial = "";
 
 		}
 	}
@@ -148,7 +148,7 @@ class SS_Testimonial {
 		echo '<form action="' . esc_url($_SERVER['REQUEST_URI']) . '" method="post">';
 		echo '<p>';
 		echo 'Your Name (required) <br />';
-		echo '<input type="text" name="ts-name" pattern="[a-zA-Z0-9 ]+" value="' . $name . '" size="40" /><span class="error"/>' . $nameErr . '</span>';
+		echo '<input type="text" name="ts-name" pattern="[a-zA-Z0-9 ]+" value="' . $fname . '" size="40" /><span class="error"/>' . $nameErr . '</span>';
 		echo '</p>';
 		echo '<p>';
 		echo 'Your Email (required) <br />';
@@ -160,7 +160,7 @@ class SS_Testimonial {
 		echo '</p>';
 		echo '<p>';
 		echo 'Your Testimonial (required) <br />';
-		echo '<textarea rows="10" cols="35" name="ts-testimonial">' . $testimonial . '</textarea><span class="error"/>' . $testimonial . '</span>';
+		echo '<textarea rows="10" cols="35" name="ts-testimonial">' . $testimonial . '</textarea><span class="error"/>' . $testimonialErr . '</span>';
 		echo '</p>';
 		echo '<p><input type="submit" name="ts-submitted" value="Send"/></p>';
 		echo '</form>';
@@ -258,13 +258,6 @@ class WP_Testimonial_Admin {
 		<?php
 	}
 
-}
-
-function clean_input($data) {
-	$data = trim($data);
-	$data = stripslashes($data);
-	$data = htmlspecialchars($data);
-	return $data;
 }
 
 $testimonial = new SS_Testimonial;
