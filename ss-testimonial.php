@@ -247,7 +247,7 @@ class WP_Testimonial_Admin {
 		global $wpdb;
 		$table_name = $wpdb->prefix.'testimonial';
 
-		$delete_ts = $_GET['delete_ts'];
+		$delete_ts = isset($_GET['delete_ts']) ? $_GET('delete_ts') : null;
 
 		if (!empty($delete_ts)) {
 			$wpdb->delete($table_name, array('id' => $delete_ts));
@@ -279,7 +279,7 @@ class WP_Testimonial_Admin {
 					<td><?php echo $a['email']; ?></td>
 					<td><?php echo $a['phone_number']; ?></td>
 					<td><?php echo $a['testimonial']; ?></td>
-					<td><a href="<?php echo add_query_arg('delete_ts',$a['id']) ?>" name="ts-delete">Delete</a></td>
+					<td><a href="<?php echo add_query_arg(array('delete_ts' => $a['id']),site_url()) ?>" name="ts-delete">Delete</a></td>
 				</tr>
 
 				<?php } ?>
